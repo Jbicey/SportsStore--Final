@@ -1,15 +1,112 @@
-﻿@model SportsStore.WebUI.Models.ProductsListViewModel
+﻿
+<!--All of the search bar and typeahead functionality was borrowed from Evan Peterson and worked on in class-->
+
+@model SportsStore.WebUI.Models.ProductsListViewModel
 
 @{
     ViewBag.Title = "Products";
 }
 
+<!-- Setting up the search bar -->
+<form action="" class="form-horizontal">
+    <div class="form-group">
+        <label for="searchbar" class="col-sm-2 control-label">SEARCH:</label>
+        <div class="col-sm-4">
+            <input id="searchbar" class="typeahead form-control" type="text" value="" />
+        </div>
+    </div>
+</form>
 
-@foreach (var p in Model.Products) {
-    @Html.Partial("ProductSummary", p)
-}
+@Html.Hidden("category", Model.CurrentCategory)
+@Html.Hidden("page", Model.PagingInfo.CurrentPage)
 
-<div class="btn-group pull-right">
-    @Html.PageLinks(Model.PagingInfo, x => Url.Action("List",
-        new { page = x, category = Model.CurrentCategory }))
+<div id="productGridContainer">
+    @Html.Partial("ProductGrid", Model)
 </div>
+
+<script>
+    // Executing searches
+
+    var searchInProgress = false;
+
+    $(document).ready(function () {
+
+        $.each($("#categories").children(), function (_, cat) {
+            $(cat).click(function (e) {
+                e.preventDefault();
+                $("#category").val($(cat).html());
+                reloadProductGrid();
+            });
+        });
+
+        var searchbar = $("#searchbar");
+        searchbar.keyup(function () {
+            reloadProductGrid();
+        });
+    });
+
+    function reloadProductGrid() {
+        var cat = $("#category");
+        $("#productGridContainer").load("@Url.Action("ProductGrid")"
+            + "?query=" + $("#searchbar").val()
+            + "&category=" + (cat.val() == "Home" ? "" : cat.val())
+            + "&page=" + $("#page").val()
+        );
+    }
+
+    // TYPEAHEAD FUNCTIONALITY
+    // Sourced and adapted from: http://twitter.github.io/typeahead.js/examples/
+    var substringMatcher = function (strs) {
+        return function findMatches(q, cb) {
+            var matches, substringRegex;
+
+            // an array that will be populated with substring matches
+            matches = [];
+
+            // regex used to determine if a string contains the substring `q`
+            substrRegex = new RegExp(q, 'i');
+
+            // iterate through the pool of strings and for any string that
+            // contains the substring `q`, add it to the `matches` array
+            $.each(strs, function (i, str) {
+                if (substrRegex.test(str)) {
+                    matches.push(str);
+                }
+            });
+
+            cb(matches);
+        };
+    };
+
+    var products = JSON.parse('@Html.Raw(Model.JsonProducts)');
+
+    $('#searchbar.typeahead').typeahead({
+        hint: true,
+        highlight: true,
+        minLength: 1
+    },
+    {
+        name: 'products',
+        source: substringMatcher(products)
+    });
+
+    $('.tt-menu').addClass("table");
+
+</script>
+
+<style>
+    .tt-menu {
+        width: 422px;
+        margin: 12px 0;
+        padding: 8px 0;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        -webkit-border-radius: 8px;
+        -moz-border-radius: 8px;
+        border-radius: 8px;
+        -webkit-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+        -moz-box-shadow: 0 5px 10px rgba(0,0,0,.2);
+        box-shadow: 0 5px 10px rgba(0,0,0,.2);
+    }
+</style>
