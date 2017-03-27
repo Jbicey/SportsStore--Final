@@ -18,14 +18,15 @@ namespace SportsStore.WebUI.Controllers {
         }
 
         public ViewResult List(string category, int page = 1) {
-
-            ProductsListViewModel viewModel = new ProductsListViewModel {
+            ProductsListViewModel model = new ProductsListViewModel
+            {
                 Products = repository.Products
                     .Where(p => category == null || p.Category == category)
                     .OrderBy(p => p.ProductID)
                     .Skip((page - 1) * PageSize)
                     .Take(PageSize),
-                PagingInfo = new PagingInfo {
+                PagingInfo = new PagingInfo
+                {
                     CurrentPage = page,
                     ItemsPerPage = PageSize,
                     TotalItems = category == null ?
@@ -34,7 +35,7 @@ namespace SportsStore.WebUI.Controllers {
                 },
                 CurrentCategory = category
             };
-            return View(viewModel);
+            return View(model);
         }
 
         public FileContentResult GetImage(int productId) {
