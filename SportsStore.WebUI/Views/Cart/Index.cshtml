@@ -48,6 +48,18 @@
     </tfoot>
 </table>
 
+<!--This is where I start my .hover() Jquery-->
+<script type="text/javascript">
+    $("cartTable").hover(
+        function () {
+            $(this).css("background", "#997F08");
+        },
+        function () {
+            $(this).css("background", "");
+        }
+    );
+
+</script>
 <div class="text-center">
     <a class="btn btn-primary" href="@Model.ReturnUrl">Continue shopping</a>
     @Html.ActionLink("Checkout now", "Checkout", null, new { @class = "btn btn-primary" })
